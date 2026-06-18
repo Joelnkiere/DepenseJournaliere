@@ -36,9 +36,10 @@ try {
         case 'process_recurring':
             $today = date('Y-m-d');
             $due = \App\Models\RecurringTransaction::getDueTransactions($today);
+            $activePeriod = \App\Models\BudgetPeriod::getOrCreateActive($userId);
             $processed = 0;
             foreach ($due as $t) {
-                \App\Models\Expense::create($t['budget_id'], $t['category_id'], $t['montant'], '[Auto] '.($t['description']??'Récurrent'), $today, false);
+                \App\Models\Expense::create($t['budget_id'], $t['category_id'], $t['montant'], '[Auto] '.($t['description']??'Récurrent'), $today, false, null, $activePeriod['id'] ?? null, $t['account_id'] ?? null);
                 \App\Models\RecurringTransaction::updateNextExecution($t['id'], $t['frequence']);
                 \App\Models\Notification::create($userId, 'info', 'Transaction récurrente exécutée', "{$t['description']} : {$t['montant']}€");
                 $processed++;
