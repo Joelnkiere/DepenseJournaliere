@@ -1,0 +1,111 @@
+:root {
+    --bs-body-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    font-weight: 600;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.progress {
+    border-radius: 0.5rem;
+}
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.form-control, .form-select {
+    border-radius: 0.375rem;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 0.75rem !important;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+.nav-link.active {
+    font-weight: 600;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.table > tbody > tr:last-child td {
+    border-bottom: none;
+}
+
+canvas {
+    max-height: 300px;
+}
+
+input[type="month"] {
+    max-width: 180px;
+}
+
+.alert {
+    border: none;
+    border-left: 3px solid;
+}
+
+.alert-success { border-left-color: var(--bs-success); }
+.alert-warning { border-left-color: var(--bs-warning); }
+.alert-danger { border-left-color: var(--bs-danger); }
+.alert-info { border-left-color: var(--bs-info); }
+
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark);
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}
+
+.dropdown-menu {
+    border-radius: 0.5rem;
+}

@@ -1,7 +1,3 @@
 <?php
-session_start();
-if(session_destroy())
-{
-header("Location: login.php");
-}
-?>
+header('Location: public/logout.php');
+exit;
