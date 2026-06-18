@@ -9,7 +9,8 @@ function showToast(type, message) {
 
 async function apiFetch(url, options = {}) {
     try {
-        const resp = await fetch(url, options);
+        const base = typeof API_BASE !== 'undefined' ? API_BASE : '';
+        const resp = await fetch(base + url, options);
         return await resp.json();
     } catch (err) {
         showToast('danger', 'Erreur réseau : ' + err.message);

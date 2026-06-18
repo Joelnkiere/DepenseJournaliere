@@ -120,6 +120,9 @@
 <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
 <script>
+const API_BASE = '<?= rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') ?>/../';
+</script>
+<script>
 // Close mobile more menu on click outside
 document.addEventListener('click', function(e) {
     const menu = document.getElementById('mobileMoreMenu');
@@ -129,12 +132,12 @@ document.addEventListener('click', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const resp = await fetch('api/notifications.php?action=count_unread');
+    const resp = await fetch(API_BASE + 'api/notifications.php?action=count_unread');
     const data = await resp.json();
     const badge = document.getElementById('notifBadge');
     if (badge && data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
 
-    const resp2 = await fetch('api/notifications.php?action=list');
+    const resp2 = await fetch(API_BASE + 'api/notifications.php?action=list');
     const notifs = await resp2.json();
     const list = document.getElementById('notifList');
     if (list) {
@@ -155,11 +158,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 async function markRead(id) {
     const data = new FormData(); data.append('id', id);
-    await fetch('api/notifications.php?action=mark_read', {method:'POST', body:data});
+    await fetch(API_BASE + 'api/notifications.php?action=mark_read', {method:'POST', body:data});
     location.reload();
 }
 async function markAllRead() {
-    await fetch('api/notifications.php?action=mark_all_read', {method:'POST'});
+    await fetch(API_BASE + 'api/notifications.php?action=mark_all_read', {method:'POST'});
     location.reload();
 }
 </script>

@@ -143,7 +143,7 @@ $goals = \App\Models\SavingsGoal::getByUser($userId);
 
 <script>
 async function generatePlan() {
-    const resp = await fetch('api/planner.php?action=generate', { method: 'POST' });
+    const resp = await fetch(API_BASE + 'api/planner.php?action=generate', { method: 'POST' });
     const r = await resp.json();
     if (r.success) {
         showToast('success', 'Plan généré !');

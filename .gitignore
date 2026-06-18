@@ -1,0 +1,22 @@
+# PHP
+*.log
+*.cache
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/receipts/*
+!uploads/receipts/.gitkeep
+
+# Exports (generated)
+exports/*.csv
+exports/*.pdf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env

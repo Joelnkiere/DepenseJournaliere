@@ -241,7 +241,7 @@ $accounts = \App\Models\Account::getByUser($userId);
 document.getElementById('addGoalForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
-    const resp = await fetch('api/savings.php?action=add', { method: 'POST', body: data });
+    const resp = await fetch(API_BASE + 'api/savings.php?action=add', { method: 'POST', body: data });
     const result = await resp.json();
     if (result.success) {
         showToast('success', 'Objectif créé !');
@@ -255,7 +255,7 @@ document.getElementById('addGoalForm').addEventListener('submit', async (e) => {
 document.getElementById('editGoalForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
-    const resp = await fetch('api/savings.php?action=update', { method: 'POST', body: data });
+    const resp = await fetch(API_BASE + 'api/savings.php?action=update', { method: 'POST', body: data });
     const result = await resp.json();
     if (result.success) {
         showToast('success', 'Objectif mis à jour');
@@ -270,7 +270,7 @@ document.getElementById('addFundsForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     const form = e.target;
     const data = new FormData(form);
-    const resp = await fetch('api/savings.php?action=add_funds', { method: 'POST', body: data });
+    const resp = await fetch(API_BASE + 'api/savings.php?action=add_funds', { method: 'POST', body: data });
     const result = await resp.json();
     if (result.success) {
         showToast('success', 'Fonds ajoutés !');
@@ -286,7 +286,7 @@ function showAddGoalModal() {
 }
 
 function showEditGoalModal(id) {
-    fetch('api/savings.php?action=get&id=' + id)
+    fetch(API_BASE + 'api/savings.php?action=get&id=' + id)
         .then(r => r.json())
         .then(g => {
             document.getElementById('editGoalId').value = g.id;
@@ -311,7 +311,7 @@ async function deleteGoal(id) {
     if (!confirm('Supprimer cet objectif ?')) return;
     const data = new FormData();
     data.append('id', id);
-    const resp = await fetch('api/savings.php?action=delete', { method: 'POST', body: data });
+    const resp = await fetch(API_BASE + 'api/savings.php?action=delete', { method: 'POST', body: data });
     const result = await resp.json();
     if (result.success) {
         showToast('success', 'Objectif supprimé');
