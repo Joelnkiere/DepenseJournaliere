@@ -36,7 +36,26 @@ $categories = \App\Models\Category::getAll();
 <div class="tab-content">
     <div class="tab-pane fade show active" id="reelTab">
         <div class="card">
-            <div class="card-body p-0">
+            <div class="card-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <input type="text" id="searchExpense" class="form-control form-control-sm search-box" placeholder="🔍 Rechercher...">
+                    </div>
+                    <div class="col-md-2">
+                        <select id="filterCategory" class="form-select form-select-sm">
+                            <option value="">Toutes catégories</option>
+                            <?php foreach ($categories as $cat): ?>
+                            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nom']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" placeholder="Du">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" id="filterDateTo" class="form-control form-control-sm" placeholder="Au">
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="expensesTable">
                         <thead class="table-dark">
@@ -45,6 +64,7 @@ $categories = \App\Models\Category::getAll();
                                 <th>Catégorie</th>
                                 <th>Montant</th>
                                 <th>Description</th>
+                                <th>Reçu</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -143,6 +163,10 @@ $categories = \App\Models\Category::getAll();
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <input type="text" name="description" class="form-control" placeholder="Optionnel">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reçu (image)</label>
+                        <input type="file" name="receipt" class="form-control" accept="image/*">
                     </div>
                     <input type="hidden" name="mois" value="<?= $mois ?>">
                 </div>

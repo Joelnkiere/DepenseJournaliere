@@ -4,4 +4,4 @@ require_once __DIR__ . '/../config/bootstrap.php';
 if (!\App\Core\Session::get('user_id')) {
     header('Location: login.php'); exit;
 }
-include __DIR__ . '/../src/Views/budget/index.php';
+include __DIR__ . '/../src/Views/revenus/index.php';

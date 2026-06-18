@@ -21,10 +21,20 @@ try {
             echo json_encode($goals);
             break;
 
+        case 'get':
+            $id = (int) ($_GET['id'] ?? 0);
+            $goal = \App\Models\SavingsGoal::getById($id);
+            echo json_encode($goal ?: ['error' => 'Not found']);
+            break;
+
         case 'add':
             $titre = trim($_POST['titre'] ?? '');
             $montantCible = (float) ($_POST['montant_cible'] ?? 0);
             $dateLimite = $_POST['date_limite'] ?? null;
+            $accountId = !empty($_POST['account_id']) ? (int)$_POST['account_id'] : null;
+            $autoSaveType = $_POST['auto_save_type'] ?? 'none';
+            $autoSaveValue = (float) ($_POST['auto_save_value'] ?? 0);
+            $autoSaveFrequence = $_POST['auto_save_frequence'] ?? null;
 
             if (empty($titre) || $montantCible <= 0) {
                 http_response_code(400);
@@ -32,7 +42,7 @@ try {
                 exit;
             }
 
-            $id = \App\Models\SavingsGoal::create($userId, $titre, $montantCible, $dateLimite ?: null);
+            $id = \App\Models\SavingsGoal::create($userId, $titre, $montantCible, $dateLimite ?: null, $accountId, $autoSaveType, $autoSaveValue, $autoSaveFrequence);
             $goal = \App\Models\SavingsGoal::getById($id);
             echo json_encode(['success' => true, 'goal' => $goal]);
             break;
@@ -42,6 +52,10 @@ try {
             $titre = trim($_POST['titre'] ?? '');
             $montantCible = (float) ($_POST['montant_cible'] ?? 0);
             $dateLimite = $_POST['date_limite'] ?? null;
+            $accountId = !empty($_POST['account_id']) ? (int)$_POST['account_id'] : null;
+            $autoSaveType = $_POST['auto_save_type'] ?? 'none';
+            $autoSaveValue = (float) ($_POST['auto_save_value'] ?? 0);
+            $autoSaveFrequence = $_POST['auto_save_frequence'] ?? null;
 
             if ($id <= 0) {
                 http_response_code(400);
@@ -49,7 +63,7 @@ try {
                 exit;
             }
 
-            \App\Models\SavingsGoal::update($id, $titre, $montantCible, $dateLimite ?: null);
+            \App\Models\SavingsGoal::update($id, $titre, $montantCible, $dateLimite ?: null, $accountId, $autoSaveType, $autoSaveValue, $autoSaveFrequence);
             $goal = \App\Models\SavingsGoal::getById($id);
             echo json_encode(['success' => true, 'goal' => $goal]);
             break;

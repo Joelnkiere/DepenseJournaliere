@@ -18,92 +18,96 @@
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-primary h-100">
+<div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card border-primary h-100 kpi-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="card-text text-muted small">Revenu</p>
-                        <h4 class="text-primary mb-0" id="revenuDisplay"><?= number_format($budget['revenu_mensuel'], 2) ?>€</h4>
+                        <small class="text-muted">Revenu</small>
+                        <h4 class="text-primary mb-0" id="revenuDisplay"><?= number_format($budget['revenu_mensuel'], 0) ?>€</h4>
+                        <?php if ($activePeriod): ?>
+                        <small class="text-muted"><?= $activePeriod['nom'] ?: $activePeriod['type'] ?></small>
+                        <?php endif; ?>
                     </div>
-                    <i class="bi bi-cash-stack display-6 text-primary opacity-50"></i>
+                    <i class="bi bi-cash-stack kpi-icon"></i>
                 </div>
-                <button class="btn btn-sm btn-outline-primary mt-2" onclick="editRevenu()">
-                    <i class="bi bi-pencil"></i> Modifier
-                </button>
+                <button class="btn btn-sm btn-outline-primary mt-1 py-0" onclick="editRevenu()"><i class="bi bi-pencil"></i></button>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-success h-100">
+    <div class="col-6 col-md-3">
+        <div class="card border-success h-100 kpi-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="card-text text-muted small">Reste à vivre</p>
-                        <h4 class="text-success mb-0" id="resteAVivreDisplay"><?= number_format($resteAVivre, 2) ?>€</h4>
+                        <small class="text-muted">Reste</small>
+                        <h4 class="text-success mb-0" id="resteAVivreDisplay"><?= number_format($resteAVivre, 0) ?>€</h4>
                     </div>
-                    <i class="bi bi-heart-pulse display-6 text-success opacity-50"></i>
+                    <i class="bi bi-heart-pulse kpi-icon"></i>
                 </div>
                 <?php if ($resteAVivre > 0 && !empty($savingsGoals)): ?>
-                <button class="btn btn-sm btn-outline-info mt-2" onclick="showTransferModal()">
-                    <i class="bi bi-send"></i> Verser à l'épargne
-                </button>
+                <button class="btn btn-sm btn-outline-info mt-1 py-0" onclick="showTransferModal()"><i class="bi bi-send"></i></button>
                 <?php endif; ?>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-danger h-100">
+    <div class="col-6 col-md-3">
+        <div class="card border-danger h-100 kpi-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="card-text text-muted small">Total dépensé</p>
-                        <h4 class="text-danger mb-0"><?= number_format($totalDepense, 2) ?>€</h4>
+                        <small class="text-muted">Dépensé</small>
+                        <h4 class="text-danger mb-0"><?= number_format($totalDepense, 0) ?>€</h4>
                     </div>
-                    <i class="bi bi-cart-dash display-6 text-danger opacity-50"></i>
+                    <i class="bi bi-cart-dash kpi-icon"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-info h-100">
+    <div class="col-6 col-md-3">
+        <div class="card border-info h-100 kpi-card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="card-text text-muted small">Épargne totale</p>
-                        <h4 class="text-info mb-0"><?= number_format($totalEpargne, 2) ?>€</h4>
+                        <small class="text-muted">Net</small>
+                        <h4 class="text-info mb-0"><?= number_format($netWorth, 0) ?>€</h4>
                     </div>
-                    <i class="bi bi-piggy-bank display-6 text-info opacity-50"></i>
+                    <i class="bi bi-wallet2 kpi-icon"></i>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<div class="mb-3">
+    <a href="plan.php" class="btn btn-outline-primary w-100">
+        <i class="bi bi-clipboard-data"></i> Voir le plan financier
+    </a>
+</div>
 
-<div class="row g-3 mb-4">
+<div class="row g-2 mb-3">
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-pie-chart"></i> Répartition par catégorie</div>
+            <div class="card-header"><i class="bi bi-pie-chart"></i> Répartition</div>
             <div class="card-body">
-                <canvas id="categoryPieChart" height="250"></canvas>
+                <canvas id="categoryPieChart" height="180"></canvas>
             </div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-graph-up"></i> Dépenses quotidiennes</div>
+            <div class="card-header"><i class="bi bi-graph-up"></i> Quotidien</div>
             <div class="card-body">
-                <canvas id="dailyLineChart" height="250"></canvas>
+                <canvas id="dailyLineChart" height="180"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
+<div class="row g-2 mb-3">
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-lightbulb text-warning"></i> Conseiller Financier</div>
+            <div class="card-header"><i class="bi bi-lightbulb text-warning"></i> Conseil</div>
             <div class="card-body" id="advisorContent">
                 <?php if ($budget['revenu_mensuel'] > 0): ?>
                 <div class="mb-3">
@@ -147,7 +151,7 @@
     </div>
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-trophy"></i> Objectifs d'épargne</div>
+            <div class="card-header"><i class="bi bi-trophy"></i> Objectifs</div>
             <div class="card-body" id="savingsGoalsList">
                 <?php if (empty($savingsGoals)): ?>
                 <p class="text-muted text-center my-4">Aucun objectif pour le moment.</p>
@@ -177,7 +181,7 @@
     </div>
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-exclamation-triangle text-warning"></i> Alertes budget</div>
+            <div class="card-header"><i class="bi bi-exclamation-triangle text-warning"></i> Alertes</div>
             <div class="card-body">
                 <?php if (!empty($conseils['alertes_categories'])): ?>
                 <?php foreach ($conseils['alertes_categories'] as $alerte): ?>
@@ -203,39 +207,52 @@
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-list-ul"></i> Dernières dépenses</span>
+        <span><i class="bi bi-list-ul"></i> Dépenses</span>
         <button class="btn btn-sm btn-primary" onclick="showAddExpenseModal()">
-            <i class="bi bi-plus-lg"></i> Ajouter
+            <i class="bi bi-plus-lg"></i>
         </button>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <!-- Desktop table -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover mb-0" id="expensesTable">
                 <thead class="table-dark">
                     <tr>
                         <th>Date</th>
                         <th>Catégorie</th>
                         <th>Montant</th>
-                        <th>Description</th>
-                        <th>Actions</th>
+                        <th>Reçu</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach (array_slice($depenses, 0, 10) as $dep): ?>
                     <tr>
-                        <td><?= date('d/m/Y', strtotime($dep['date_depense'])) ?></td>
+                        <td><?= date('d/m', strtotime($dep['date_depense'])) ?></td>
                         <td><span class="badge bg-secondary"><?= htmlspecialchars($dep['category_nom']) ?></span></td>
-                        <td class="text-danger fw-bold">-<?= number_format($dep['montant'], 2) ?>€</td>
-                        <td><?= htmlspecialchars($dep['description'] ?: '-') ?></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense(<?= $dep['id'] ?>)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
+                        <td class="text-danger fw-bold">-<?= number_format($dep['montant'], 0) ?>€</td>
+                        <td><?= $dep['image_path'] ? '<img src="'.$dep['image_path'].'" class="receipt-preview" onclick="window.open(\''.$dep['image_path'].'\',\'_blank\')">' : '-' ?></td>
+                        <td><button class="btn btn-sm btn-outline-danger py-0" onclick="deleteExpense(<?= $dep['id'] ?>)"><i class="bi bi-trash"></i></button></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+        <!-- Mobile list -->
+        <div class="d-md-none">
+            <?php foreach (array_slice($depenses, 0, 10) as $dep): ?>
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-secondary">
+                <div>
+                    <small class="text-muted"><?= date('d/m', strtotime($dep['date_depense'])) ?></small>
+                    <span class="badge bg-secondary ms-1"><?= htmlspecialchars($dep['category_nom']) ?></span>
+                    <div><small><?= htmlspecialchars($dep['description'] ?: '') ?></small></div>
+                </div>
+                <div class="text-end">
+                    <div class="text-danger fw-bold">-<?= number_format($dep['montant'], 0) ?>€</div>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteExpense(<?= $dep['id'] ?>)"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>
@@ -271,7 +288,23 @@
                         <label class="form-label">Description</label>
                         <input type="text" name="description" class="form-control" placeholder="Optionnel">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Compte</label>
+                        <select name="account_id" class="form-select">
+                            <option value="">Sélectionner...</option>
+                            <?php foreach (\App\Models\Account::getByUser(\App\Core\Session::get('user_id')) as $a): ?>
+                            <option value="<?= $a['id'] ?>"><?= htmlspecialchars($a['nom']) ?> (<?= number_format($a['solde_actuel'], 0) ?>€)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reçu (image)</label>
+                        <input type="file" name="receipt" class="form-control" accept="image/*">
+                    </div>
                     <input type="hidden" name="mois" value="<?= $mois ?>">
+                    <?php if ($activePeriod): ?>
+                    <input type="hidden" name="period_id" value="<?= $activePeriod['id'] ?>">
+                    <?php endif; ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

@@ -1,6 +1,7 @@
 <?php include __DIR__ . '/../layouts/header.php';
 
 $goals = \App\Models\SavingsGoal::getByUser($userId);
+$accounts = \App\Models\Account::getByUser($userId);
 ?>
 
 <div class="row mb-3">
@@ -40,7 +41,8 @@ $goals = \App\Models\SavingsGoal::getByUser($userId);
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#" onclick="showAddFundsModal(<?= $goal['id'] ?>, '<?= htmlspecialchars($goal['titre']) ?>')"><i class="bi bi-plus-circle"></i> Ajouter des fonds</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showAddFundsModal(<?= $goal['id'] ?>, '<?= htmlspecialchars($goal['titre'], ENT_QUOTES) ?>')"><i class="bi bi-plus-circle"></i> Ajouter des fonds</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showEditGoalModal(<?= $goal['id'] ?>)"><i class="bi bi-pencil"></i> Modifier</a></li>
                             <li><a class="dropdown-item" href="#" onclick="deleteGoal(<?= $goal['id'] ?>)"><i class="bi bi-trash text-danger"></i> Supprimer</a></li>
                         </ul>
                     </div>
@@ -61,7 +63,13 @@ $goals = \App\Models\SavingsGoal::getByUser($userId);
                     <span class="text-muted">/ <?= number_format($goal['montant_cible'], 2) ?>€</span>
                 </div>
                 <?php if ($goal['date_limite']): ?>
-                <small class="text-muted"><i class="bi bi-calendar"></i> Limite : <?= date('d/m/Y', strtotime($goal['date_limite'])) ?></small>
+                <small class="text-muted"><i class="bi bi-calendar"></i> Limite : <?= date('d/m/Y', strtotime($goal['date_limite'])) ?></small><br>
+                <?php endif; ?>
+                <?php if ($goal['account_nom']): ?>
+                <small class="text-muted"><i class="bi bi-wallet2"></i> Compte lié : <?= htmlspecialchars($goal['account_nom']) ?></small><br>
+                <?php endif; ?>
+                <?php if ($goal['auto_save_type'] !== 'none'): ?>
+                <small class="text-info"><i class="bi bi-arrow-repeat"></i> Auto-save : <?= $goal['auto_save_value'] ?><?= $goal['auto_save_type'] === 'percentage' ? '%' : '€' ?> / <?= $goal['auto_save_frequence'] ?></small>
                 <?php endif; ?>
             </div>
         </div>
@@ -92,10 +100,111 @@ $goals = \App\Models\SavingsGoal::getByUser($userId);
                         <label class="form-label">Date limite</label>
                         <input type="date" name="date_limite" class="form-control">
                     </div>
+                    <hr>
+                    <h6><i class="bi bi-wallet2"></i> Compte lié (optionnel)</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Compte pour prélèvement</label>
+                        <select name="account_id" class="form-select">
+                            <option value="">Aucun</option>
+                            <?php foreach ($accounts as $a): ?>
+                            <option value="<?= $a['id'] ?>"><?= htmlspecialchars($a['nom']) ?> (<?= number_format($a['solde_actuel'], 0) ?>€)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <h6><i class="bi bi-arrow-repeat"></i> Épargne automatique</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Type</label>
+                            <select name="auto_save_type" class="form-select" onchange="document.getElementById('autoSaveFields').style.display=this.value!=='none'?'flex':'none'">
+                                <option value="none">Désactivé</option>
+                                <option value="percentage">Pourcentage (%)</option>
+                                <option value="fixed">Montant fixe (€)</option>
+                            </select>
+                        </div>
+                        <div id="autoSaveFields" style="display:none;" class="row col-md-8">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Valeur</label>
+                                <input type="number" step="0.01" name="auto_save_value" class="form-control" value="10">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fréquence</label>
+                                <select name="auto_save_frequence" class="form-select">
+                                    <option value="mensuel">Mensuel</option>
+                                    <option value="trimestriel">Trimestriel</option>
+                                    <option value="annuel">Annuel</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg"></i> Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Goal Modal -->
+<div class="modal fade" id="editGoalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> Modifier l'objectif</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editGoalForm">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editGoalId">
+                    <div class="mb-3">
+                        <label class="form-label">Titre</label>
+                        <input type="text" name="titre" id="editGoalTitre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Montant cible (€)</label>
+                        <input type="number" step="0.01" name="montant_cible" id="editGoalMontant" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date limite</label>
+                        <input type="date" name="date_limite" id="editGoalDate" class="form-control">
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label class="form-label">Compte lié</label>
+                        <select name="account_id" id="editGoalAccount" class="form-select">
+                            <option value="">Aucun</option>
+                            <?php foreach ($accounts as $a): ?>
+                            <option value="<?= $a['id'] ?>"><?= htmlspecialchars($a['nom']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Auto-save</label>
+                            <select name="auto_save_type" id="editGoalAutoType" class="form-select">
+                                <option value="none">Désactivé</option>
+                                <option value="percentage">%</option>
+                                <option value="fixed">Fixé</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Valeur</label>
+                            <input type="number" step="0.01" name="auto_save_value" id="editGoalAutoValue" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fréquence</label>
+                            <select name="auto_save_frequence" id="editGoalAutoFreq" class="form-select">
+                                <option value="mensuel">Mensuel</option>
+                                <option value="trimestriel">Trimestriel</option>
+                                <option value="annuel">Annuel</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg"></i> Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -129,48 +238,73 @@ $goals = \App\Models\SavingsGoal::getByUser($userId);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('addGoalForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const data = new FormData(form);
-        const resp = await fetch('api/savings.php?action=add', { method: 'POST', body: data });
-        const result = await resp.json();
-        if (result.success) {
-            showToast('success', 'Objectif créé !');
-            bootstrap.Modal.getInstance(document.getElementById('addGoalModal')).hide();
-            setTimeout(() => location.reload(), 500);
-        } else {
-            showToast('danger', result.error || 'Erreur');
-        }
-    });
+document.getElementById('addGoalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    const resp = await fetch('api/savings.php?action=add', { method: 'POST', body: data });
+    const result = await resp.json();
+    if (result.success) {
+        showToast('success', 'Objectif créé !');
+        bootstrap.Modal.getInstance(document.getElementById('addGoalModal')).hide();
+        setTimeout(() => location.reload(), 500);
+    } else {
+        showToast('danger', result.error || 'Erreur');
+    }
+});
 
-    document.getElementById('addFundsForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const data = new FormData(form);
-        const resp = await fetch('api/savings.php?action=add_funds', { method: 'POST', body: data });
-        const result = await resp.json();
-        if (result.success) {
-            showToast('success', 'Fonds ajoutés !');
-            bootstrap.Modal.getInstance(document.getElementById('addFundsModal')).hide();
-            setTimeout(() => location.reload(), 500);
-        } else {
-            showToast('danger', result.error || 'Erreur');
-        }
-    });
+document.getElementById('editGoalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    const resp = await fetch('api/savings.php?action=update', { method: 'POST', body: data });
+    const result = await resp.json();
+    if (result.success) {
+        showToast('success', 'Objectif mis à jour');
+        bootstrap.Modal.getInstance(document.getElementById('editGoalModal')).hide();
+        setTimeout(() => location.reload(), 500);
+    } else {
+        showToast('danger', result.error || 'Erreur');
+    }
+});
+
+document.getElementById('addFundsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const resp = await fetch('api/savings.php?action=add_funds', { method: 'POST', body: data });
+    const result = await resp.json();
+    if (result.success) {
+        showToast('success', 'Fonds ajoutés !');
+        bootstrap.Modal.getInstance(document.getElementById('addFundsModal')).hide();
+        setTimeout(() => location.reload(), 500);
+    } else {
+        showToast('danger', result.error || 'Erreur');
+    }
 });
 
 function showAddGoalModal() {
-    const modal = new bootstrap.Modal(document.getElementById('addGoalModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('addGoalModal')).show();
+}
+
+function showEditGoalModal(id) {
+    fetch('api/savings.php?action=get&id=' + id)
+        .then(r => r.json())
+        .then(g => {
+            document.getElementById('editGoalId').value = g.id;
+            document.getElementById('editGoalTitre').value = g.titre;
+            document.getElementById('editGoalMontant').value = g.montant_cible;
+            document.getElementById('editGoalDate').value = g.date_limite || '';
+            document.getElementById('editGoalAccount').value = g.account_id || '';
+            document.getElementById('editGoalAutoType').value = g.auto_save_type || 'none';
+            document.getElementById('editGoalAutoValue').value = g.auto_save_value || 0;
+            document.getElementById('editGoalAutoFreq').value = g.auto_save_frequence || 'mensuel';
+            new bootstrap.Modal(document.getElementById('editGoalModal')).show();
+        });
 }
 
 function showAddFundsModal(id, titre) {
     document.getElementById('fundsGoalId').value = id;
     document.getElementById('fundsGoalTitle').textContent = titre;
-    const modal = new bootstrap.Modal(document.getElementById('addFundsModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('addFundsModal')).show();
 }
 
 async function deleteGoal(id) {

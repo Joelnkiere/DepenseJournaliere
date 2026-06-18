@@ -9,9 +9,47 @@ class User
     public static function findById(int $id): ?array
     {
         $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare('SELECT id, nom, email, created_at FROM users WHERE id = ?');
+        $stmt = $db->prepare('SELECT id, nom, email, theme, created_at FROM users WHERE id = ?');
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
+    }
+
+    public static function getTheme(int $id): string
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('SELECT theme FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row['theme'] ?? 'dark';
+    }
+
+    public static function updateTheme(int $id, string $theme): bool
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('UPDATE users SET theme = ? WHERE id = ?');
+        return $stmt->execute([$theme, $id]);
+    }
+
+    public static function setResetToken(string $email, string $token, DateTime $expires): bool
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?');
+        return $stmt->execute([$token, $expires->format('Y-m-d H:i:s'), $email]);
+    }
+
+    public static function findByResetToken(string $token): ?array
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('SELECT * FROM users WHERE reset_token = ? AND reset_expires > NOW()');
+        $stmt->execute([$token]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function clearResetToken(int $id): bool
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('UPDATE users SET reset_token = NULL, reset_expires = NULL WHERE id = ?');
+        return $stmt->execute([$id]);
     }
 
     public static function findByEmail(string $email): ?array

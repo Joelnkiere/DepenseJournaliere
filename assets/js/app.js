@@ -1,16 +1,8 @@
-// Budget Manager - Main Application JS
-
 function showToast(type, message) {
     const container = document.getElementById('toastContainer') || document.body;
     const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-bg-${type} border-0 show`;
-    toast.setAttribute('role', 'alert');
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
+    toast.className = `toast align-items-center text-bg-${type} border-0 show fade-in`;
+    toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
     container.appendChild(toast);
     setTimeout(() => { toast.remove(); }, 4000);
 }
@@ -29,17 +21,14 @@ function showAddExpenseModal() {
     const el = document.getElementById('addExpenseModal');
     if (el) new bootstrap.Modal(el).show();
 }
-
 function showAddGoalModal() {
     const el = document.getElementById('addGoalModal');
     if (el) new bootstrap.Modal(el).show();
 }
-
 function showTransferModal() {
     const el = document.getElementById('transferModal');
     if (el) new bootstrap.Modal(el).show();
 }
-
 function editRevenu() {
     const el = document.getElementById('editRevenuModal');
     if (el) new bootstrap.Modal(el).show();
@@ -47,26 +36,17 @@ function editRevenu() {
 
 async function deleteExpense(id) {
     if (!confirm('Supprimer cette dépense ?')) return;
-    const data = new FormData();
-    data.append('id', id);
+    const data = new FormData(); data.append('id', id);
     const result = await apiFetch('api/expenses.php?action=delete', { method: 'POST', body: data });
-    if (result && result.success) {
-        showToast('success', 'Dépense supprimée');
-        setTimeout(() => location.reload(), 300);
-    }
+    if (result?.success) { showToast('success', 'Dépense supprimée'); setTimeout(() => location.reload(), 300); }
 }
 
 async function cloturerMois(mois) {
     if (!confirm(`Clôturer le budget de ${mois} ? Cette action est irréversible.`)) return;
-    const data = new FormData();
-    data.append('mois', mois);
+    const data = new FormData(); data.append('mois', mois);
     const result = await apiFetch('api/budget.php?action=cloturer', { method: 'POST', body: data });
-    if (result && result.success) {
-        showToast('success', result.message);
-        setTimeout(() => location.reload(), 500);
-    } else if (result) {
-        showToast('danger', result.error || 'Erreur');
-    }
+    if (result?.success) { showToast('success', result.message); setTimeout(() => location.reload(), 500); }
+    else if (result) showToast('danger', result.error || 'Erreur');
 }
 
 async function loadExpenses(type) {
@@ -76,35 +56,48 @@ async function loadExpenses(type) {
     const tbody = table.querySelector('tbody');
     if (!tbody) return;
 
-    const data = await apiFetch(`api/expenses.php?action=list&type=${type}&mois=${moisActuel}`);
+    const params = new URLSearchParams({ action: 'list', type, mois: moisActuel });
+    const searchInput = document.getElementById('searchExpense');
+    const catFilter = document.getElementById('filterCategory');
+    const dateFrom = document.getElementById('filterDateFrom');
+    const dateTo = document.getElementById('filterDateTo');
+    if (searchInput?.value) params.append('search', searchInput.value);
+    if (catFilter?.value) params.append('category_id', catFilter.value);
+    if (dateFrom?.value) params.append('date_from', dateFrom.value);
+    if (dateTo?.value) params.append('date_to', dateTo.value);
+
+    const data = await apiFetch(`api/expenses.php?${params}`);
     tbody.innerHTML = '';
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Aucune dépense</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Aucune dépense</td></tr>';
         return;
     }
 
     data.forEach(exp => {
         const tr = document.createElement('tr');
+        const hasReceipt = exp.image_path ? true : false;
         tr.innerHTML = `
             <td>${new Date(exp.date_depense).toLocaleDateString('fr-FR')}</td>
             <td><span class="badge bg-secondary">${exp.category_nom || ''}</span></td>
             <td class="text-danger fw-bold">-${parseFloat(exp.montant).toFixed(2)}€</td>
             <td>${exp.description || '-'}</td>
+            <td>${hasReceipt ? `<img src="../${exp.image_path}" class="receipt-preview" onclick="window.open('../${exp.image_path}','_blank')">` : '-'}</td>
             <td>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense(${exp.id})">
-                    <i class="bi bi-trash"></i>
-                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense(${exp.id})"><i class="bi bi-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
+// Centralized form handling
 document.addEventListener('DOMContentLoaded', () => {
     const formHandlers = {
         addExpenseForm: async (form) => {
             const data = new FormData(form);
+            const fileInput = form.querySelector('[type="file"]');
+            if (fileInput?.files[0]) data.append('receipt', fileInput.files[0]);
             const result = await apiFetch('api/expenses.php?action=add', { method: 'POST', body: data });
             if (result?.success) {
                 showToast('success', 'Dépense ajoutée !');
@@ -171,10 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.entries(formHandlers).forEach(([id, handler]) => {
         const form = document.getElementById(id);
-        if (form) {
-            form.addEventListener('submit', async (e) => { e.preventDefault(); await handler(form); });
-        }
+        if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await handler(form); });
     });
+
+    // Search/filter on expenses page
+    document.querySelectorAll('#searchExpense, #filterCategory, #filterDateFrom, #filterDateTo').forEach(el => {
+        if (el) el.addEventListener('change', () => loadExpenses('reel'));
+    });
+    const searchInput = document.getElementById('searchExpense');
+    if (searchInput) {
+        let timer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => loadExpenses('reel'), 300);
+        });
+    }
 
     // Charts
     if (typeof categoryData !== 'undefined' && categoryData?.length > 0) {
@@ -212,5 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         })();
+    }
+
+    // Process recurring transactions on dashboard load
+    if (window.location.pathname.includes('index.php') || window.location.pathname.endsWith('/')) {
+        fetch('api/recurring.php?action=process_recurring', { method: 'POST' });
     }
 });

@@ -3,9 +3,12 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Budget;
+use App\Models\BudgetPeriod;
 use App\Models\Expense;
 use App\Models\SavingsGoal;
 use App\Models\Category;
+use App\Models\Account;
+use App\Models\Revenue;
 use App\Helpers\FinancialAdvisor;
 
 class DashboardController extends Controller
@@ -26,6 +29,11 @@ class DashboardController extends Controller
         $totalEpargne = SavingsGoal::getTotalEpargne($userId);
         $savingsGoals = SavingsGoal::getByUser($userId);
 
+        // Nouveaux KPIs
+        $activePeriod = BudgetPeriod::getOrCreateActive($userId);
+        $netWorth = Account::getTotalNetWorth($userId);
+        $revenusMois = Revenue::getYearlyTotal($userId);
+
         $advisor = new FinancialAdvisor(
             $budget['revenu_mensuel'],
             Budget::getReelByCategory($budget['id']),
@@ -45,6 +53,8 @@ class DashboardController extends Controller
             'savingsGoals' => $savingsGoals,
             'conseils' => $conseils,
             'mois' => $mois,
+            'activePeriod' => $activePeriod,
+            'netWorth' => $netWorth,
         ]);
     }
 }
