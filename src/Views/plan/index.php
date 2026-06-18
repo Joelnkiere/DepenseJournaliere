@@ -1,4 +1,11 @@
-<?php include __DIR__ . '/../layouts/header.php';
+<?php
+$userId = (int) \App\Core\Session::get('user_id');
+if ($userId <= 0) {
+    header('Location: login.php');
+    exit;
+}
+
+include __DIR__ . '/../layouts/header.php';
 
 $planModel = \App\Models\FinancialPlan::getActive($userId);
 $plan = $planModel ? $planModel['plan_data'] : null;

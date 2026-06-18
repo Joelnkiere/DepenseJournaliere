@@ -1,164 +1,234 @@
+<?php
+$currentPage = basename($_SERVER['PHP_SELF']);
+$isLoggedIn  = \App\Core\Session::isLoggedIn();
+$userTheme   = $isLoggedIn ? \App\Models\User::getTheme(\App\Core\Session::get('user_id')) : 'dark';
+$userName    = $isLoggedIn ? (\App\Core\Session::get('user_nom') ?? '') : '';
+$userEmail   = $isLoggedIn ? (\App\Core\Session::get('user_email') ?? '') : '';
+$userInitial = $userName ? strtoupper(mb_substr($userName, 0, 1)) : 'U';
+
+$navItems = [
+    ['href' => 'index.php',     'icon' => 'bi-speedometer2',   'label' => 'Dashboard'],
+    ['href' => 'plan.php',      'icon' => 'bi-clipboard-data', 'label' => 'Plan mensuel'],
+    ['href' => 'budget.php',    'icon' => 'bi-piggy-bank',     'label' => 'Budget'],
+    ['href' => 'revenus.php',   'icon' => 'bi-cash-stack',     'label' => 'Revenus'],
+    ['href' => 'expenses.php',  'icon' => 'bi-receipt',        'label' => 'D&eacute;penses'],
+    ['href' => 'portfolio.php', 'icon' => 'bi-wallet2',        'label' => 'Portefeuille'],
+    ['href' => 'savings.php',   'icon' => 'bi-graph-up-arrow', 'label' => '&Eacute;pargne'],
+    ['href' => 'recurring.php', 'icon' => 'bi-arrow-repeat',   'label' => 'R&eacute;currents'],
+    ['href' => 'advisor.php',   'icon' => 'bi-lightbulb',      'label' => 'Conseiller'],
+    ['href' => 'archive.php',   'icon' => 'bi-clock-history',  'label' => 'Historique'],
+    ['href' => 'import.php',    'icon' => 'bi-upload',         'label' => 'Importer'],
+];
+
+$pageTitles = [
+    'index.php'      => 'Dashboard',
+    'plan.php'       => 'Plan Mensuel',
+    'budget.php'     => 'Budget',
+    'revenus.php'    => 'Revenus',
+    'expenses.php'   => 'D&eacute;penses',
+    'portfolio.php'  => 'Portefeuille',
+    'savings.php'    => '&Eacute;pargne',
+    'recurring.php'  => 'R&eacute;currents',
+    'advisor.php'    => 'Conseiller IA',
+    'archive.php'    => 'Historique',
+    'import.php'     => 'Importer',
+    'profile.php'    => 'Profil',
+    'categories.php' => 'Cat&eacute;gories',
+];
+$pageTitle = $pageTitles[$currentPage] ?? 'Budget Manager';
+$plainTitle = html_entity_decode($pageTitle, ENT_QUOTES, 'UTF-8');
+?>
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="<?= \App\Core\Session::isLoggedIn() ? \App\Models\User::getTheme(\App\Core\Session::get('user_id')) : 'dark' ?>">
+<html lang="fr" data-bs-theme="<?= htmlspecialchars($userTheme) ?>">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Budget Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title><?= htmlspecialchars($plainTitle) ?> &mdash; BudgetPro</title>
+    <meta name="description" content="Gerez vos depenses, revenus et budgets avec BudgetPro.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4/dist/css/adminlte.min.css">
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <script>
+        (function(){
+            const t = localStorage.getItem('bm_theme');
+            if (t) document.documentElement.setAttribute('data-bs-theme', t);
+        })();
+    </script>
 </head>
-<body>
-
-<!-- Desktop Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary top-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="index.php"><i class="bi bi-wallet2"></i> Budget</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="plan.php"><i class="bi bi-clipboard-data"></i> Plan</a></li>
-                <li class="nav-item"><a class="nav-link" href="budget.php"><i class="bi bi-piggy-bank"></i> Budget</a></li>
-                <li class="nav-item"><a class="nav-link" href="revenus.php"><i class="bi bi-cash-stack"></i> Revenus</a></li>
-                <li class="nav-item"><a class="nav-link" href="expenses.php"><i class="bi bi-receipt"></i> Dépenses</a></li>
-                <li class="nav-item"><a class="nav-link" href="portfolio.php"><i class="bi bi-wallet2"></i> Portefeuille</a></li>
-                <li class="nav-item"><a class="nav-link" href="savings.php"><i class="bi bi-graph-up-arrow"></i> Épargne</a></li>
-                <li class="nav-item"><a class="nav-link" href="recurring.php"><i class="bi bi-arrow-repeat"></i> Récurrent</a></li>
-                <li class="nav-item"><a class="nav-link" href="advisor.php"><i class="bi bi-lightbulb"></i> Conseil</a></li>
-                <li class="nav-item"><a class="nav-link" href="archive.php"><i class="bi bi-clock-history"></i> Historique</a></li>
-            </ul>
+<body class="layout-fixed sidebar-expand-lg">
+<div class="app-wrapper">
+    <nav class="app-header navbar navbar-expand bg-body border-bottom">
+        <div class="container-fluid">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="import.php" title="Import"><i class="bi bi-upload"></i></a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link position-relative" href="#" id="notifDropdown" data-bs-toggle="dropdown">
-                        <i class="bi bi-bell"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="font-size:0.6rem;display:none;">0</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" id="notifMenu" style="width:320px;max-height:400px;overflow-y:auto;">
-                        <li class="dropdown-header d-flex justify-content-between">
-                            <span>Notifications</span>
-                            <small><a href="#" onclick="markAllRead()" class="text-decoration-none">Tout lu</a></small>
-                        </li>
-                        <div id="notifList"><li><span class="dropdown-item-text text-muted">Chargement...</span></li></div>
-                    </ul>
+                <li class="nav-item">
+                    <button class="nav-link btn btn-link px-2" type="button" data-lte-toggle="sidebar" aria-label="Ouvrir le menu">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
                 </li>
+                <li class="nav-item d-none d-md-block">
+                    <span class="nav-link page-title"><?= $pageTitle ?></span>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person"></i> Profil</a></li>
-                        <li><a class="dropdown-item" href="categories.php"><i class="bi bi-tags"></i> Catégories</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
-                    </ul>
+                    <button class="btn btn-sm btn-outline-secondary position-relative"
+                            id="notifBtn" data-bs-toggle="dropdown"
+                            aria-expanded="false" aria-label="Notifications">
+                        <i class="bi bi-bell fs-6"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              id="notifBadge" style="display:none;font-size:.6rem;">0</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow notif-dropdown-menu"
+                         aria-labelledby="notifBtn">
+                        <div class="notif-header">
+                            <span>Notifications</span>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                                    onclick="markAllRead()">Tout lu</button>
+                        </div>
+                        <div id="notifList">
+                            <div class="text-center text-body-secondary py-3 small">Chargement...</div>
+                        </div>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <button class="btn btn-sm btn-outline-secondary" id="headerThemeToggle"
+                            aria-label="Basculer le theme" title="Changer le theme">
+                        <i class="bi bi-sun-fill" id="themeIconSun"
+                           style="<?= $userTheme==='light'?'':'display:none' ?>"></i>
+                        <i class="bi bi-moon-stars-fill" id="themeIconMoon"
+                           style="<?= $userTheme==='dark'?'':'display:none' ?>"></i>
+                    </button>
                 </li>
             </ul>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<!-- Mobile Bottom Navigation -->
-<nav class="bottom-nav">
-    <a href="index.php" class="<?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>">
-        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-    </a>
-    <a href="plan.php" class="<?= basename($_SERVER['PHP_SELF']) === 'plan.php' ? 'active' : '' ?>">
-        <i class="bi bi-clipboard-data"></i><span>Plan</span>
-    </a>
-    <a href="budget.php" class="<?= basename($_SERVER['PHP_SELF']) === 'budget.php' ? 'active' : '' ?>">
-        <i class="bi bi-piggy-bank"></i><span>Budget</span>
-    </a>
-    <a href="expenses.php" class="<?= basename($_SERVER['PHP_SELF']) === 'expenses.php' ? 'active' : '' ?>">
-        <i class="bi bi-receipt"></i><span>Dépenses</span>
-    </a>
-    <a href="portfolio.php" class="<?= basename($_SERVER['PHP_SELF']) === 'portfolio.php' ? 'active' : '' ?>">
-        <i class="bi bi-wallet2"></i><span>Portefeuille</span>
-    </a>
-    <a href="savings.php" class="<?= basename($_SERVER['PHP_SELF']) === 'savings.php' ? 'active' : '' ?>">
-        <i class="bi bi-graph-up-arrow"></i><span>Épargne</span>
-    </a>
-    <a href="javascript:void(0)" onclick="document.getElementById('mobileMoreMenu').classList.toggle('d-none')">
-        <i class="bi bi-grid-3x3-gap-fill"></i><span>Plus</span>
-    </a>
-</nav>
+    <aside class="app-sidebar bg-body-secondary" id="appSidebar" aria-label="Sidebar">
+        <div class="sidebar-brand">
+            <a href="index.php" class="brand-link">
+                <i class="bi bi-wallet2 brand-image text-primary"></i>
+                <span class="brand-text fw-semibold">BudgetPro</span>
+            </a>
+        </div>
 
-<!-- Mobile More Menu -->
-<div id="mobileMoreMenu" class="d-none position-fixed bottom-nav" style="bottom:var(--bottom-nav-height);height:auto;padding:0.5rem;background:var(--bs-dark);border-top:1px solid var(--bs-border-color);z-index:1029;">
-    <div class="d-flex flex-wrap justify-content-around gap-1">
-        <a href="revenus.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-cash-stack d-block fs-5"></i>Revenus
-        </a>
-        <a href="recurring.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-arrow-repeat d-block fs-5"></i>Récurrent
-        </a>
-        <a href="advisor.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-lightbulb d-block fs-5"></i>Conseil
-        </a>
-        <a href="archive.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-clock-history d-block fs-5"></i>Historique
-        </a>
-        <a href="import.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-upload d-block fs-5"></i>Import
-        </a>
-        <a href="profile.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-person d-block fs-5"></i>Profil
-        </a>
-        <a href="categories.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-secondary-color);text-decoration:none;">
-            <i class="bi bi-tags d-block fs-5"></i>Catégories
-        </a>
-        <a href="logout.php" class="text-center" style="flex:0 0 25%;font-size:0.6rem;color:var(--bs-danger);text-decoration:none;">
-            <i class="bi bi-box-arrow-right d-block fs-5"></i>Quitter
-        </a>
-    </div>
-</div>
+        <div class="sidebar-wrapper">
+            <?php if ($isLoggedIn): ?>
+            <div class="user-panel d-flex align-items-center gap-3 px-3 py-3 border-bottom">
+                <div class="profile-avatar"><?= htmlspecialchars($userInitial) ?></div>
+                <div class="info overflow-hidden">
+                    <div class="fw-semibold text-truncate"><?= htmlspecialchars($userName) ?></div>
+                    <div class="text-body-secondary text-truncate small"><?= htmlspecialchars($userEmail) ?></div>
+                </div>
+            </div>
+            <?php endif; ?>
 
-<div class="container-fluid p-3">
-<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+            <nav class="mt-2">
+                <span class="sidebar-section-label">Navigation</span>
+                <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+                    <?php foreach ($navItems as $item): ?>
+                    <li class="nav-item">
+                        <a href="<?= htmlspecialchars($item['href']) ?>"
+                           class="nav-link <?= $currentPage === $item['href'] ? 'active' : '' ?>"
+                           <?= $currentPage === $item['href'] ? 'aria-current="page"' : '' ?>>
+                            <i class="nav-icon bi <?= htmlspecialchars($item['icon']) ?>"></i>
+                            <p><?= $item['label'] ?></p>
+                        </a>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+
+                <span class="sidebar-section-label">Compte</span>
+                <ul class="nav sidebar-menu flex-column" role="menu">
+                    <li class="nav-item">
+                        <a href="profile.php" class="nav-link <?= $currentPage==='profile.php'?'active':'' ?>">
+                            <i class="nav-icon bi bi-person-circle"></i>
+                            <p>Profil</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="categories.php" class="nav-link <?= $currentPage==='categories.php'?'active':'' ?>">
+                            <i class="nav-icon bi bi-tags"></i>
+                            <p>Cat&eacute;gories</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-custom px-3 py-3 border-top">
+            <div class="btn-group w-100 mb-2" role="group" aria-label="Theme">
+                <button type="button" id="themeLightBtn"
+                        class="btn btn-sm <?= $userTheme==='light' ? 'btn-primary' : 'btn-outline-secondary' ?>"
+                        onclick="setTheme('light')">
+                    <i class="bi bi-sun-fill me-1"></i>Clair
+                </button>
+                <button type="button" id="themeDarkBtn"
+                        class="btn btn-sm <?= $userTheme==='dark' ? 'btn-primary' : 'btn-outline-secondary' ?>"
+                        onclick="setTheme('dark')">
+                    <i class="bi bi-moon-stars-fill me-1"></i>Sombre
+                </button>
+            </div>
+            <a href="logout.php" class="btn btn-outline-danger btn-sm w-100">
+                <i class="bi bi-box-arrow-right me-2"></i>Deconnexion
+            </a>
+        </div>
+    </aside>
+
+    <main class="app-main">
+        <div class="app-content-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="m-0"><?= $pageTitle ?></h1>
+                    </div>
+                    <div class="col-auto d-none d-sm-block">
+                        <ol class="breadcrumb float-sm-end mb-0">
+                            <li class="breadcrumb-item"><a href="index.php">Accueil</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><?= $pageTitle ?></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="app-content">
+            <div class="container-fluid">
+                <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1080;"></div>
 
 <script>
 const API_BASE = '<?= rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') ?>/../';
 </script>
 <script>
-// Close mobile more menu on click outside
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('mobileMoreMenu');
-    if (menu && !menu.classList.contains('d-none') && !e.target.closest('.bottom-nav')) {
-        menu.classList.add('d-none');
-    }
-});
-
 document.addEventListener('DOMContentLoaded', async () => {
-    const resp = await fetch(API_BASE + 'api/notifications.php?action=count_unread');
-    const data = await resp.json();
-    const badge = document.getElementById('notifBadge');
-    if (badge && data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
+    try {
+        const r1 = await fetch(API_BASE + 'api/notifications.php?action=count_unread');
+        const d1 = await r1.json();
+        const badge = document.getElementById('notifBadge');
+        if (badge && d1.count > 0) { badge.textContent = d1.count; badge.style.display = 'inline'; }
 
-    const resp2 = await fetch(API_BASE + 'api/notifications.php?action=list');
-    const notifs = await resp2.json();
-    const list = document.getElementById('notifList');
-    if (list) {
-        if (notifs.length === 0) {
-            list.innerHTML = '<li><span class="dropdown-item-text text-muted">Aucune notification</span></li>';
-        } else {
-            list.innerHTML = notifs.map(n => `
-                <li>
-                    <a class="dropdown-item ${n.lu ? 'text-muted' : 'fw-bold'}" href="#" onclick="markRead(${n.id}); return false;">
-                        <small class="text-${n.type}">${n.titre}</small><br>
-                        <span style="font-size:0.85rem;">${n.message}</span>
-                        <br><small class="text-muted">${new Date(n.created_at).toLocaleDateString('fr-FR')}</small>
-                    </a>
-                </li>
-            `).join('');
+        const r2 = await fetch(API_BASE + 'api/notifications.php?action=list');
+        const notifs = await r2.json();
+        const list = document.getElementById('notifList');
+        if (list && Array.isArray(notifs)) {
+            list.innerHTML = notifs.length === 0
+                ? '<div class="text-center text-body-secondary py-3 small"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i>Aucune notification</div>'
+                : notifs.map(n => `
+                    <a class="notif-item ${n.lu?'':'unread'}" href="#" onclick="markRead(${n.id}); return false;">
+                        <div class="notif-dot bg-${n.type}"></div>
+                        <div>
+                            <div class="fw-semibold" style="font-size:.82rem;">${n.titre}</div>
+                            <div class="text-body-secondary" style="font-size:.8rem;">${n.message}</div>
+                            <div class="text-body-tertiary" style="font-size:.72rem;">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+                        </div>
+                    </a>`).join('');
         }
-    }
+    } catch(e) {}
 });
 async function markRead(id) {
-    const data = new FormData(); data.append('id', id);
-    await fetch(API_BASE + 'api/notifications.php?action=mark_read', {method:'POST', body:data});
+    const fd = new FormData(); fd.append('id', id);
+    await fetch(API_BASE + 'api/notifications.php?action=mark_read', {method:'POST',body:fd});
     location.reload();
 }
 async function markAllRead() {

@@ -25,7 +25,7 @@ class Database
             ]);
         } catch (PDOException $e) {
             http_response_code(500);
-            die('Erreur de connexion à la base de données.');
+            die('Erreur de connexion à la base de données : ' . $e->getMessage());
         }
     }
 

@@ -11,6 +11,18 @@ async function apiFetch(url, options = {}) {
     try {
         const base = typeof API_BASE !== 'undefined' ? API_BASE : '';
         const resp = await fetch(base + url, options);
+        const contentType = resp.headers.get('content-type') || '';
+        if (!resp.ok) {
+            const message = contentType.includes('application/json')
+                ? (await resp.json()).error || `Erreur ${resp.status}`
+                : `Erreur ${resp.status}`;
+            showToast('danger', message);
+            return null;
+        }
+        if (!contentType.includes('application/json')) {
+            showToast('danger', 'Reponse serveur invalide');
+            return null;
+        }
         return await resp.json();
     } catch (err) {
         showToast('danger', 'Erreur réseau : ' + err.message);
@@ -221,6 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Process recurring transactions on dashboard load
     if (window.location.pathname.includes('index.php') || window.location.pathname.endsWith('/')) {
-        fetch('api/recurring.php?action=process_recurring', { method: 'POST' });
+        fetch((typeof API_BASE !== 'undefined' ? API_BASE : '') + 'api/recurring.php?action=process_recurring', { method: 'POST' });
     }
 });

@@ -2,13 +2,14 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Session;
 use App\Models\User;
 
 class AuthController extends Controller
 {
     public function login(): void
     {
-        if ($this->session->isLoggedIn()) {
+        if (Session::isLoggedIn()) {
             $this->redirect('index.php');
         }
 
@@ -18,9 +19,9 @@ class AuthController extends Controller
             $user = User::verifyPassword($email, $password);
 
             if ($user) {
-                $this->session->set('user_id', $user['id']);
-                $this->session->set('user_nom', $user['nom']);
-                $this->session->set('user_email', $user['email']);
+                Session::set('user_id', $user['id']);
+                Session::set('user_nom', $user['nom']);
+                Session::set('user_email', $user['email']);
                 $this->redirect('index.php');
             }
             $error = 'Email ou mot de passe incorrect.';
@@ -31,7 +32,7 @@ class AuthController extends Controller
 
     public function register(): void
     {
-        if ($this->session->isLoggedIn()) {
+        if (Session::isLoggedIn()) {
             $this->redirect('index.php');
         }
 
@@ -49,7 +50,7 @@ class AuthController extends Controller
                 $error = 'Cet email est déjà utilisé.';
             } else {
                 User::create($nom, $email, $password);
-                $this->session->setFlash('success', 'Compte créé avec succès. Connectez-vous.');
+                Session::setFlash('success', 'Compte créé avec succès. Connectez-vous.');
                 $this->redirect('login.php');
             }
         }
@@ -59,7 +60,7 @@ class AuthController extends Controller
 
     public function logout(): void
     {
-        $this->session->destroy();
+        Session::destroy();
         $this->redirect('login.php');
     }
 }

@@ -10,6 +10,11 @@ class Session
         }
     }
 
+    public static function startIfNot(): void
+    {
+        self::start();
+    }
+
     public static function set(string $key, mixed $value): void
     {
         $_SESSION[$key] = $value;

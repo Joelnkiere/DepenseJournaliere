@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS dailyexpense CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE dailyexpense;
 
+SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -66,6 +67,19 @@ CREATE TABLE IF NOT EXISTS account_transactions (
     FOREIGN KEY (destination_account_id) REFERENCES accounts(id) ON DELETE SET NULL,
     INDEX idx_account (account_id),
     INDEX idx_date (date_transaction)
+) ENGINE=InnoDB;
+
+-- Migration: keep monthly_budgets for backward compatibility
+CREATE TABLE IF NOT EXISTS monthly_budgets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    mois VARCHAR(7) NOT NULL,
+    revenu_mensuel DECIMAL(12,2) NOT NULL DEFAULT 0,
+    epargne_auto DECIMAL(12,2) NOT NULL DEFAULT 0,
+    cloture TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_month (user_id, mois)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS budget_periods (
@@ -204,18 +218,7 @@ CREATE TABLE IF NOT EXISTS budget_template_items (
     UNIQUE KEY unique_template_cat (template_id, category_id)
 ) ENGINE=InnoDB;
 
--- Migration: keep monthly_budgets for backward compatibility
-CREATE TABLE IF NOT EXISTS monthly_budgets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    mois VARCHAR(7) NOT NULL,
-    revenu_mensuel DECIMAL(12,2) NOT NULL DEFAULT 0,
-    epargne_auto DECIMAL(12,2) NOT NULL DEFAULT 0,
-    cloture TINYINT(1) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_month (user_id, mois)
-) ENGINE=InnoDB;
+
 
 CREATE TABLE IF NOT EXISTS financial_plans (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -246,3 +249,5 @@ CREATE TABLE IF NOT EXISTS plan_items (
     INDEX idx_plan (plan_id),
     INDEX idx_execute (execute)
 ) ENGINE=InnoDB;
+
+SET FOREIGN_KEY_CHECKS = 1;
